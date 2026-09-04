@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from detector import CraneDetector
 from zone_logic import check_zones, is_box_in_zone
-from alert_enmj ngine import AlertEngine
+from alert_engine import AlertEngine
 from fatigue_detector import FatigueDetector
 from acoustic_detector import AcousticDetector
 from report_engine import generate_shift_report
