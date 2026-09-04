@@ -2,6 +2,7 @@ services:
   - type: web
     name: craneguard-backend
     env: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: SUPABASE_URL
@@ -16,5 +17,6 @@ services:
   - type: web
     name: craneguard-frontend
     env: node
+    plan: free
     buildCommand: "cd frontend && npm install && npm run build"
     startCommand: "cd frontend && npm run preview"
