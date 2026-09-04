@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from detector import CraneDetector
 from zone_logic import check_zones, is_box_in_zone
-from alert_engine import AlertEngine
+from alert_enmj ngine import AlertEngine
 from fatigue_detector import FatigueDetector
 from acoustic_detector import AcousticDetector
 from report_engine import generate_shift_report
@@ -159,7 +159,7 @@ app.add_middleware(
 )
 
 detector     = CraneDetector(
-    os.getenv("DETECTOR_MODEL", "yolov8s.pt"),
+    os.getenv("DETECTOR_MODEL", "yolov8n.pt"),
     use_pose=os.getenv("USE_POSE", "true").lower() == "true",
     use_sahi=os.getenv("USE_SAHI", "false").lower() == "true",
 )
