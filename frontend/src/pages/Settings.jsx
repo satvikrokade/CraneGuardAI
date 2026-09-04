@@ -306,6 +306,20 @@ export default function Settings() {
                                     <Plus size={16} />
                                 </button>
                             </div>
+                            <div className="flex gap-2 mt-2">
+                                <button 
+                                    onClick={() => { setNewCamName("AI Simulation"); setNewCamSource("SIMULATION"); }}
+                                    className="px-2 py-1 bg-white/5 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 rounded text-[9px] font-mono"
+                                >
+                                    + Presets: Synthetic Simulation
+                                </button>
+                                <button 
+                                    onClick={() => { setNewCamName("Laptop Webcam"); setNewCamSource("0"); }}
+                                    className="px-2 py-1 bg-white/5 hover:bg-white/10 text-slate-400 border border-white/10 rounded text-[9px] font-mono"
+                                >
+                                    + Presets: Local Cam 0
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
