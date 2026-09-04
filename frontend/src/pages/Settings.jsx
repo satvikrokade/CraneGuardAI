@@ -294,7 +294,7 @@ export default function Settings() {
                             <div className="flex gap-2">
                                 <input 
                                     type="text"
-                                    placeholder="RTSP URL / Index"
+                                    placeholder="RTSP / IP Webcam URL / Index"
                                     className="flex-1 bg-background border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-teal-500 outline-none font-mono"
                                     value={newCamSource}
                                     onChange={e => setNewCamSource(e.target.value)}
