@@ -1,3 +1,12 @@
+---
+title: CraneGuard Safety Monitoring
+emoji: 🏗️
+colorFrom: blue
+colorTo: green
+sdk: static
+pinned: false
+---
+
 # CraneGuard: Safety Monitoring System
 
 **CraneGuard** is a full-stack safety monitoring solution designed for industrial environments. It provides real-time protection for workers in high-risk zones near heavy machinery.
