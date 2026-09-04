@@ -592,16 +592,7 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str = "0"):
     await websocket.accept()
     
     cap = None
-    lock_acquired = False
     try:
-        # Only one active camera stream at a time; avoids camera backend contention on Windows.
-        if camera_stream_lock.locked():
-            await websocket.send_json({"error": "Camera stream is already in use by another client. Please close other tabs and retry."})
-            return
-
-        await camera_stream_lock.acquire()
-        lock_acquired = True
-
         # Find camera source from ID
         cameras = await alert_engine.get_cameras()
         cam = next((c for c in cameras if str(c.get("id")) == str(camera_id)), None)
@@ -625,16 +616,6 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str = "0"):
             return None
 
         cap = try_open(src, backends)
-        
-        if not cap and isinstance(src, int):
-            for i in range(5): # Try more indices
-                if i == src: continue
-                print(f"Index {i} ... ", end="")
-                cap = try_open(i, backends)
-                if cap:
-                    print(f"Success!")
-                    break
-                print("Failed")
 
         if not cap or not cap.isOpened():
             print(f"WARNING: No camera found. Running in SIMULATION MODE with synthetic frames.")
@@ -655,17 +636,39 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str = "0"):
         while True:
             loop_start = time.perf_counter()
             if is_simulation:
-                # Generate a synthetic frame with moving shapes to simulate workers/machines
+                # Generate a rich synthetic frame simulating an industrial site
                 frame = np.zeros((720, 1280, 3), dtype=np.uint8)
-                # Background
-                cv2.rectangle(frame, (0, 0), (1280, 720), (20, 20, 20), -1)
-                # Moving "person" (simulated by a box that the detector might not pick up, 
-                # but we can manually inject detections if we wanted, or just show a moving circle)
                 t = time.time()
-                px = int(640 + 400 * np.cos(t * 0.5))
-                py = int(360 + 200 * np.sin(t * 0.3))
-                cv2.circle(frame, (px, py), 40, (0, 255, 255), -1) # Yellow "worker"
-                cv2.putText(frame, "SIMULATED SITE FEED", (500, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                # Dark concrete background
+                cv2.rectangle(frame, (0, 0), (1280, 720), (25, 28, 32), -1)
+                # Ground line
+                cv2.line(frame, (0, 580), (1280, 580), (60, 65, 70), 2)
+                # Crane structure (static)
+                cv2.rectangle(frame, (900, 100), (960, 580), (80, 90, 100), -1)  # Crane tower
+                cv2.rectangle(frame, (900, 100), (1150, 130), (80, 90, 100), -1) # Crane arm
+                cv2.line(frame, (1150, 130), (1150, 300), (100, 110, 120), 2)    # Crane cable
+                cv2.rectangle(frame, (1120, 300), (1180, 340), (100, 120, 140), -1) # Hook
+                # Safety zone polygon
+                zone_pts = np.array([[800,580],[1200,580],[1200,400],[800,400]], np.int32)
+                cv2.polylines(frame, [zone_pts], True, (0, 200, 100), 2)
+                cv2.putText(frame, "ZONE A1", (805, 395), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 100), 2)
+                # Moving worker
+                px = int(640 + 350 * np.cos(t * 0.4))
+                py = int(500 + 50 * np.sin(t * 0.6))
+                # Worker body
+                cv2.rectangle(frame, (px-15, py-60), (px+15, py+20), (0, 180, 255), -1)
+                cv2.circle(frame, (px, py-75), 20, (0, 200, 255), -1)  # Head
+                # Second worker
+                px2 = int(300 + 100 * np.sin(t * 0.3))
+                cv2.rectangle(frame, (px2-15, py-60), (px2+15, py+20), (0, 180, 255), -1)
+                cv2.circle(frame, (px2, py-75), 20, (0, 200, 255), -1)
+                # Overlay text
+                cv2.rectangle(frame, (0, 0), (1280, 60), (15, 18, 22), -1)
+                cv2.putText(frame, "CRANEGUARD AI  |  DEMO SIMULATION MODE", (30, 40),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 220, 180), 2)
+                # Timestamp
+                ts = time.strftime("%Y-%m-%d  %H:%M:%S  UTC")
+                cv2.putText(frame, ts, (900, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (120, 130, 140), 1)
                 success = True
             else:
                 success, frame = cap.read()
@@ -906,8 +909,6 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: str = "0"):
     finally:
         if cap:
             cap.release()
-        if lock_acquired and camera_stream_lock.locked():
-            camera_stream_lock.release()
 
 if __name__ == "__main__":
     import uvicorn
